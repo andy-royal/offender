@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "offender.h"
+//#include "offender.h"
 
 #define MAX_LOADSTRING 100
 

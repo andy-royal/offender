@@ -58,6 +58,11 @@ namespace OpenGLUtils {
             //friend Vector<NumType> operator* <> (sqmat<NumType,4>&, Vector<NumType>&);
     };
 
+    void GenericErrorDumper(const char* text);
+    void GenericErrorDumper(string& text);
+    void DumpOpenGLError(GLenum status);
+    GLboolean CheckForOpenGLErrors();
+
     class MouseInfo {
         private:
             //static const float MouseSpeed;

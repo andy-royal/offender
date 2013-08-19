@@ -40,6 +40,8 @@ namespace Offender {
         //const GLuint m_terrain_depth = 128;
 
         const string vShaderStr =
+            "#version 150                                       \n"
+            "                                                   \n"
             "uniform mat4 u_MVPMatrix;                          \n"
             "uniform vec3 u_LightVector;                        \n"
             "uniform vec3 Ka; // Ambient reflectivity           \n"
@@ -50,36 +52,38 @@ namespace Offender {
             "in vec3 a_Position;                                \n"
             "in vec3 a_Normal;                                  \n"
             "in vec2 a_TexCoord;                                \n"
-//            "in vec4 a_Colour;                                  \n"
             "in vec3 a_TexWeightings;                           \n"
             "                                                   \n"
-            "varying vec2 v_TexCoord;                           \n"
-//            "varying vec4 v_Colour;                             \n"
-            "varying vec3 v_TexWeightings;                      \n"
-            "varying vec3 v_LightIntensity;                     \n"
+            "out vec2 v_TexCoord;                               \n"
+            "out vec3 v_TexWeightings;                          \n"
+            "out vec3 v_LightIntensity;                         \n"
             "                                                   \n"
             "void main()                                        \n"
             "{                                                  \n"
             "  gl_Position = u_MVPMatrix * vec4(a_Position, 1); \n"
             "  v_TexCoord = a_TexCoord;                         \n"
-//            "  v_Colour = a_Colour;                             \n"
             "  v_TexWeightings = a_TexWeightings;               \n"
             "  v_LightIntensity = La * Ka + Ld * Kd * max(dot(a_Normal, u_LightVector), 0.0); \n"
-//            "  v_LightIntensity = Ld * Kd;                      \n"
             "}                                                  \n";
    
 #ifdef WIREFRAME
         const string fShaderStr =  
+            "#version 150                                       \n"
+            "                                                   \n"
             "precision mediump float;                           \n"
             "                                                   \n"
             "in vec4 v_Colour;                                  \n"
+            "out vec4 colourout;                                \n"
             "                                                   \n"
             "void main()                                        \n"
             "{                                                  \n"
-            "  gl_FragColor = vec4(0.0f, 0.30f, 0.15f, 1.0f);   \n"
+            "  colourout = vec4(0.0f, 0.30f, 0.15f, 1.0f);      \n"
+            //"  gl_FragColor = vec4(0.0f, 0.30f, 0.15f, 1.0f);   \n"
             "}                                                  \n";
 #else
         const string fShaderStr =  
+            "#version 150                                       \n"
+            "                                                   \n"
             "precision mediump float;                             \n"
             "                                                     \n"
             "uniform sampler2D u_texture_0;                       \n"
@@ -87,18 +91,17 @@ namespace Offender {
             "uniform sampler2D u_texture_2;                       \n"
             "                                                     \n"
             "in vec2 v_TexCoord;                                  \n"
-//            "in vec4 v_Colour;                                    \n"
             "in vec3 v_TexWeightings;                             \n"
             "in vec3 v_LightIntensity;                            \n"
+            "out vec4 colourout;                                  \n"
             "                                                     \n"
             "void main()                                          \n"
             "{                                                    \n"
             "  vec4 grass = v_TexWeightings[0] * texture2D(u_texture_0, v_TexCoord); \n"
             "  vec4 rock  = v_TexWeightings[1] * texture2D(u_texture_1, v_TexCoord); \n"
             "  vec4 snow  = v_TexWeightings[2] * texture2D(u_texture_2, v_TexCoord); \n"
-            "  gl_FragColor = vec4(v_LightIntensity, 1.0) * (grass + rock + snow);  \n"
-//            "  gl_FragColor = grass + rock + snow;                \n"
-//            "  gl_FragColor = v_Colour;                           \n"
+            "  colourout  = vec4(v_LightIntensity, 1.0) * (grass + rock + snow);  \n"
+            //"  gl_FragColor = vec4(v_LightIntensity, 1.0) * (grass + rock + snow);  \n"
             "}                                                    \n";
 #endif
 
@@ -375,10 +378,12 @@ namespace Offender {
 #ifdef MEASURE_TERRAIN_INIT_TIMES
         m_textures_done_time = clock();
 #endif
+        glGenVertexArrays(1, &m_vao);
+        glBindVertexArray(m_vao);
+
         glGenBuffers(1, &m_vertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, (m_terrain_width + 1) * (m_terrain_depth + 1) * sizeof(vertexStruct), m_vertices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         glGenBuffers(1, &m_indexBuffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
@@ -387,11 +392,26 @@ namespace Offender {
 #else
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * m_terrain_width * (m_terrain_depth + 1) * sizeof(GLuint), indices.get(), GL_STATIC_DRAW);
 #endif
+
+        glVertexAttribPointer (10, 3, GL_FLOAT, GL_FALSE, sizeof(vertexStruct), reinterpret_cast<void*>(offsetof(vertexStruct,position)));
+        glEnableVertexAttribArray (10);
+        glVertexAttribPointer (11, 3, GL_FLOAT, GL_FALSE, sizeof(vertexStruct), reinterpret_cast<void*>(offsetof(vertexStruct,normal)));
+        glEnableVertexAttribArray (11);
+        glVertexAttribPointer (12, 2, GL_FLOAT, GL_FALSE, sizeof(vertexStruct), reinterpret_cast<void*>(offsetof(vertexStruct,texcoord)));
+        glEnableVertexAttribArray (12);
+        glVertexAttribPointer (13, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(vertexStruct), reinterpret_cast<void*>(offsetof(vertexStruct,texweightings)));
+        glEnableVertexAttribArray (13);
+
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
 
 #ifdef MEASURE_TERRAIN_INIT_TIMES
         m_init_done_time = clock();
 #endif
+        if (!CheckForOpenGLErrors()) {
+            return GL_FALSE;
+        }
         return GL_TRUE;
     }
 
@@ -400,17 +420,10 @@ namespace Offender {
         glUseProgram (m_TerrainProgram);
 
         // Load the vertex data
+        glBindVertexArray(m_vao);
         glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-        glVertexAttribPointer (10, 3, GL_FLOAT, GL_FALSE, sizeof(vertexStruct), reinterpret_cast<void*>(offsetof(vertexStruct,position)));
-        glEnableVertexAttribArray (10);
-        glVertexAttribPointer (11, 3, GL_FLOAT, GL_FALSE, sizeof(vertexStruct), reinterpret_cast<void*>(offsetof(vertexStruct,normal)));
-        glEnableVertexAttribArray (11);
-        // Load the colour data
-        glVertexAttribPointer (12, 2, GL_FLOAT, GL_FALSE, sizeof(vertexStruct), reinterpret_cast<void*>(offsetof(vertexStruct,texcoord)));
-        glEnableVertexAttribArray (12);
-        glVertexAttribPointer (13, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(vertexStruct), reinterpret_cast<void*>(offsetof(vertexStruct,texweightings)));
-        glEnableVertexAttribArray (13);
-
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
+        
         glUniformMatrix4fv(m_TerrainMVPHandle, 1, GL_TRUE, m_ViewPersp->data());
         ObjVec LightVector(0.5f, sqrt(3.0f) / 2.0f, 0.0f);
 //        glUniform3fv(m_LightVectorHandle, 1, LightVector.data());
@@ -431,7 +444,6 @@ namespace Offender {
         glBindTexture (GL_TEXTURE_2D, m_TerrainTexture2Handle);
         glUniform1i (m_TerrainSampler2Handle, 2);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
 #ifdef WIREFRAME
         GLuint column, row;
         for (column=0; column <= m_terrain_width; column++) {
@@ -462,7 +474,11 @@ namespace Offender {
 #endif
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
 
+        if (!CheckForOpenGLErrors()) {
+            return GL_FALSE;
+        }
         return GL_TRUE;
     }
 

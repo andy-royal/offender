@@ -62,6 +62,7 @@ namespace Offender {
             vertexStruct             ne_corner;
             GLuint                   m_vertexBuffer;
             GLuint                   m_indexBuffer;
+            GLuint                   m_vao;
 #ifdef MEASURE_TERRAIN_INIT_TIMES
             clock_t                  m_init_start_time;
             clock_t                  m_vertices_done_time;

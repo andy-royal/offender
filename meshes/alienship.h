@@ -7,6 +7,7 @@ namespace Offender {
         private:
             GLuint          m_vertexBuffer;
             GLuint          m_indexBuffer;
+            GLuint          m_vao;
             void            InitGeometry();
         public:
             AlienShip(World*, ObjPos, ObjVec, ObjQuat);

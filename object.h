@@ -25,9 +25,6 @@ namespace Offender {
     typedef struct ObjectVertex
     {
         GLfloat position[3];
-        //GLubyte colour[4];
-        //GLfloat texcoord[2];
-        //GLbyte texweightings[3];
         GLfloat normal[3];
     } ObjectVertex;
 
@@ -57,8 +54,6 @@ namespace Offender {
             virtual GLuint          GetProgramObject();
             virtual GLuint          GetModelViewHandle();
             virtual GLuint          GetMVPHandle();
-//            virtual GLuint          GetSamplerHandle();
-//            virtual GLuint          GetTextureHandle();
             virtual GLuint          GetColourHandle();
             virtual GLuint          GetLightVectorHandle();
             virtual GLuint          GetKaHandle();

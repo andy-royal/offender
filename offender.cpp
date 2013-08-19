@@ -213,6 +213,7 @@ int WINAPI WinMain( HINSTANCE    hInstance,            // Instance
     myContext LocalContext;
     MSG     msg;                                       // Windows Message Structure
     BOOL    done=FALSE;                                // Bool Variable To Exit Loop
+    static uint64_t arse = 0;
 
     // Create Our OpenGL Window
     if (!LocalContext.Initialise("Offender"))
@@ -260,7 +261,11 @@ int WINAPI WinMain( HINSTANCE    hInstance,            // Instance
             }
             else                                    // Not Time To Quit, Update Screen
             {
-                LocalContext.SwapBuff();
+                if (CheckForOpenGLErrors()) {
+                    LocalContext.SwapBuff();
+                } else {
+                    return 0;
+                }
             }
 
             if (keys[VK_F1])                         // Is F1 Being Pressed?

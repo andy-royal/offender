@@ -4895,30 +4895,39 @@ namespace Offender {
         indices[1982] = 0;
         indices[1983] = 467;
 
+        glGenVertexArrays(1, &m_vao);
+        glBindVertexArray(m_vao);
+
         glGenBuffers(1, &m_vertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         glGenBuffers(1, &m_indexBuffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+        glVertexAttribPointer (POSITION_HANDLE, 3, GL_FLOAT, GL_FALSE, sizeof(ObjectVertex), reinterpret_cast<void*>(offsetof(vertexStruct,position)));
+        glEnableVertexAttribArray (POSITION_HANDLE);
+        glVertexAttribPointer (NORMAL_HANDLE, 3, GL_FLOAT, GL_FALSE, sizeof(ObjectVertex), reinterpret_cast<void*>(offsetof(vertexStruct,normal)));
+        glEnableVertexAttribArray (NORMAL_HANDLE);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+
+        CheckForOpenGLErrors();
     }
 
     GLboolean AlienShip::Draw() {
         // Common setup for default program
         DrawSetup();
 
-        // Load the vertex data
+        // Select buffers
+        glBindVertexArray(m_vao);
         glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-        glVertexAttribPointer (POSITION_HANDLE, 3, GL_FLOAT, GL_FALSE, sizeof(ObjectVertex), reinterpret_cast<void*>(offsetof(vertexStruct,position)));
-        glEnableVertexAttribArray (POSITION_HANDLE);
-        glVertexAttribPointer (NORMAL_HANDLE, 3, GL_FLOAT, GL_FALSE, sizeof(ObjectVertex), reinterpret_cast<void*>(offsetof(vertexStruct,normal)));
-        glEnableVertexAttribArray (NORMAL_HANDLE);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
 
         // Draw
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
         glDrawRangeElements (GL_TRIANGLE_STRIP, 0, 481, 4, GL_UNSIGNED_INT, reinterpret_cast<void*>(0*sizeof(GLuint)));
         glDrawRangeElements (GL_TRIANGLE_STRIP, 0, 481, 4, GL_UNSIGNED_INT, reinterpret_cast<void*>(4*sizeof(GLuint)));
         glDrawRangeElements (GL_TRIANGLE_STRIP, 0, 481, 4, GL_UNSIGNED_INT, reinterpret_cast<void*>(8*sizeof(GLuint)));
@@ -5435,7 +5444,11 @@ namespace Offender {
         // Detach buffers
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
 
+        if (!CheckForOpenGLErrors()) {
+            return GL_FALSE;
+        }
         return GL_TRUE;
     }
 

@@ -64,6 +64,8 @@ namespace Offender {
 
     GLuint Object::DefaultProgram() {
         const string vShaderStr =
+            "#version 150                                       \n"
+            "                                                   \n"
             "uniform mat4  u_ModelViewMatrix;                   \n"
             "uniform mat4  u_MVPMatrix;                         \n"
             "uniform vec4  u_colour;                            \n"
@@ -78,16 +80,13 @@ namespace Offender {
             "                                                   \n"
             "in vec3 a_Position;                                \n"
             "in vec3 a_Normal;                                  \n"
-            //"in vec2 a_TexCoord;                                \n"
-            //"                                                   \n"
-            //"varying vec2 v_TexCoord;                           \n"
-            "varying vec4 v_colour;                             \n"
+            "                                                   \n"
+            "out vec4 v_colour;                                 \n"
             "                                                   \n"
             "void main()                                        \n"
             "{                                                  \n"
             "  gl_Position = u_MVPMatrix * vec4(a_Position, 1); \n"
-            //"  v_TexCoord = a_TexCoord;                         \n"
-            "  vec3 tnorm = normalize(u_ModelViewMatrix *  vec4(a_Normal, 1.0));\n" // Should be Normal Matrix
+            "  vec3 tnorm = vec3(normalize(u_ModelViewMatrix * vec4(a_Normal, 1.0)));\n" // Should be Normal Matrix
             "  vec4 eyeCoords = u_ModelViewMatrix * vec4(a_Position, 1.0);\n"
             "  vec3 v = normalize(-eyeCoords.xyz);              \n"
             "  vec3 r = reflect( -u_LightVector, tnorm );       \n"
@@ -97,17 +96,16 @@ namespace Offender {
             "  v_colour = u_colour * vec4(l_LightIntensity, 1.0);  \n"
             "}                                                  \n";
         const string fShaderStr =  
+            "#version 150                                       \n"
+            "                                                   \n"
             "precision mediump float;                           \n"
             "                                                   \n"
-            //"uniform sampler2D u_texture;                       \n"
-            //"                                                   \n"
-            //"in vec2 v_TexCoord;                                \n"
             "in vec4 v_colour;                                  \n"
+            "out vec4 colourout;                                \n"
             "                                                   \n"
             "void main()                                        \n"
             "{                                                  \n"
-            //"  gl_FragColor = texture2D(u_texture, v_TexCoord); \n"
-            "  gl_FragColor = v_colour;                         \n"
+            "  colourout = v_colour;                            \n"
             "}                                                  \n";
 
         static ParamBindings AttrBindings = AssignAttrBindings();
@@ -121,7 +119,6 @@ namespace Offender {
         ParamBindings AttrBindings;
         AttrBindings[POSITION_HANDLE] = "a_Position";
         AttrBindings[NORMAL_HANDLE] = "a_Normal";
-        //AttrBindings[TEXCOORD_HANDLE] = "a_TexCoord";
         return AttrBindings;
     }
 
@@ -147,17 +144,6 @@ namespace Offender {
         static GLuint l_colour = glGetUniformLocation(programObject, "u_colour");
         return l_colour;
     }
-
-    //GLuint Object::GetSamplerHandle() {
-    //    static GLuint programObject = DefaultProgram();
-    //    static GLuint l_sampler = glGetUniformLocation(programObject, "u_texture");
-    //    return l_sampler;
-    //}
-
-    //GLuint Object::GetTextureHandle() {
-    //    static GLuint l_texture = CreateTextureFromFile("little_teddy.jpg");
-    //    return l_texture;
-    //}
 
     GLuint Object::GetLightVectorHandle() {
         static GLuint programObject = DefaultProgram();
@@ -237,6 +223,7 @@ namespace Offender {
         glUniform3f(GetKsHandle(), Ks, Ks, Ks);
         glUniform3f(GetLsHandle(), 1.0f, 1.0f, 1.0f);
         glUniform1f(GetShininessHandle(), 1.0f);
+
         return GL_TRUE;
     }
 

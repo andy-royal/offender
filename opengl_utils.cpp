@@ -8,6 +8,63 @@ using namespace std;
 
 namespace OpenGLUtils {
 
+void GenericErrorDumper(const char* text) {
+    cerr << text << endl;
+
+#ifdef _WINDOWS
+    OLECHAR winfo[MAX_PATH+1];
+    MultiByteToWideChar(CP_ACP, 0, text, -1, winfo, MAX_PATH);
+
+    MessageBox(NULL,winfo,TEXT("ERROR"),MB_OK|MB_ICONEXCLAMATION);
+#endif
+}
+
+void GenericErrorDumper(string& text) {
+    GenericErrorDumper(text.data());
+}
+
+void DumpOpenGLError(GLenum status) {
+    switch (status)
+    {
+        case GL_NO_ERROR:
+            GenericErrorDumper("GL_NO_ERROR: No error has been recorded.");
+            break;
+        case GL_INVALID_ENUM:
+            GenericErrorDumper("GL_INVALID_ENUM: An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag.");
+            break;
+        case GL_INVALID_VALUE:
+            GenericErrorDumper("GL_INVALID_VALUE: A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag.");
+            break;
+        case GL_INVALID_OPERATION:
+            GenericErrorDumper("GL_INVALID_OPERATION: The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag.");
+            break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            GenericErrorDumper("GL_INVALID_FRAMEBUFFER_OPERATION: The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag.");
+            break;
+        case GL_OUT_OF_MEMORY:
+            GenericErrorDumper("GL_OUT_OF_MEMORY: There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded.");
+            break;
+        case GL_STACK_UNDERFLOW:
+            GenericErrorDumper("GL_STACK_UNDERFLOW: An attempt has been made to perform an operation that would cause an internal stack to underflow.");
+            break;
+        case GL_STACK_OVERFLOW:
+            GenericErrorDumper("GL_STACK_OVERFLOW: An attempt has been made to perform an operation that would cause an internal stack to overflow.");
+            break;
+        default:
+            GenericErrorDumper("GL_NO_ERROR: No error has been recorded.");
+            break;
+    }
+}
+
+GLboolean CheckForOpenGLErrors() {
+    GLenum status = glGetError();
+    if (status != GL_NO_ERROR) {
+        DumpOpenGLError(status);
+        return GL_FALSE;
+    }
+    return GL_TRUE;
+}
+
 MouseInfo::MouseInfo() :
     m_leftdown(GL_FALSE),
     m_rightdown(GL_FALSE),
@@ -226,7 +283,7 @@ bool WindowsDisplayContext::Init(const wchar_t * title, int bits) {
         return FALSE;
     }
 
-    // Now initialise GLEW and try to create a new OpenGL 3.1 context
+    // Now initialise GLEW and try to create a new OpenGL 3.2 context
     if (glewInit() != GLEW_OK)
     {
         KillGLWindow();
@@ -236,8 +293,9 @@ bool WindowsDisplayContext::Init(const wchar_t * title, int bits) {
     int attribs[] =
     {
         WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-        WGL_CONTEXT_MINOR_VERSION_ARB, 1,
-        WGL_CONTEXT_FLAGS_ARB, 0,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 2,
+        WGL_CONTEXT_FLAGS_ARB, 0, // WGL_CONTEXT_DEBUG_BIT_ARB | WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+        //WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
         0
     };
 
@@ -259,6 +317,11 @@ bool WindowsDisplayContext::Init(const wchar_t * title, int bits) {
             MessageBox(NULL,L"Can't Activate The GL Rendering Context.",L"ERROR",MB_OK|MB_ICONEXCLAMATION);
             return FALSE;
         }
+        //int OpenGLVersion[2];
+        //glGetIntegerv(GL_MAJOR_VERSION, &OpenGLVersion[0]);
+        //glGetIntegerv(GL_MINOR_VERSION, &OpenGLVersion[1]);
+
+        //MessageBox(NULL,TEXT("Arse"),TEXT("OpenGL status"),MB_OK|MB_ICONINFORMATION);
     }
     else
     {
@@ -280,9 +343,15 @@ bool WindowsDisplayContext::Init(const wchar_t * title, int bits) {
     glClearDepthf(1.0f);                                    // Depth Buffer Setup
     glEnable(GL_DEPTH_TEST);                            // Enables Depth Testing
     glDepthFunc(GL_LEQUAL);                                // The Type Of Depth Testing To Do
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);    // Really Nice Perspective Calculations
-    glHint(GL_POLYGON_SMOOTH, GL_NICEST);
+    glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT, GL_NICEST);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
     glEnable(GL_POLYGON_SMOOTH);
+
+    if (!CheckForOpenGLErrors()) {
+        return FALSE;
+    }
 
     return TRUE;                                    // Success
 }

@@ -104,9 +104,15 @@ namespace Offender {
     }
 
     GLboolean World::Iteration() {
-        DrawAll();
-        MoveAll();
-        CheckForCollisions();
+        if (!DrawAll()) {
+            return GL_FALSE;
+        }
+        if (!MoveAll()) {
+            return GL_FALSE;
+        }
+        if (!CheckForCollisions()) {
+            return GL_FALSE;
+        }
 
         return GL_TRUE;
     }

@@ -283,7 +283,7 @@ bool WindowsDisplayContext::Init(const wchar_t * title, int bits) {
         return FALSE;
     }
 
-    // Now initialise GLEW and try to create a new OpenGL 3.2 context
+    // Now initialise GLEW and try to create a new OpenGL 3.1 context
     if (glewInit() != GLEW_OK)
     {
         KillGLWindow();
@@ -293,8 +293,8 @@ bool WindowsDisplayContext::Init(const wchar_t * title, int bits) {
     int attribs[] =
     {
         WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-        WGL_CONTEXT_MINOR_VERSION_ARB, 2,
-        WGL_CONTEXT_FLAGS_ARB, 0, // WGL_CONTEXT_DEBUG_BIT_ARB | WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 1,
+        WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB, // WGL_CONTEXT_DEBUG_BIT_ARB
         //WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
         0
     };

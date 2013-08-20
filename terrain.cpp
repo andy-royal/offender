@@ -40,7 +40,7 @@ namespace Offender {
         //const GLuint m_terrain_depth = 128;
 
         const string vShaderStr =
-            "#version 150                                       \n"
+            "#version 140                                       \n"
             "                                                   \n"
             "uniform mat4 u_MVPMatrix;                          \n"
             "uniform vec3 u_LightVector;                        \n"
@@ -68,7 +68,7 @@ namespace Offender {
    
 #ifdef WIREFRAME
         const string fShaderStr =  
-            "#version 150                                       \n"
+            "#version 140                                       \n"
             "                                                   \n"
             "precision mediump float;                           \n"
             "                                                   \n"
@@ -82,8 +82,8 @@ namespace Offender {
             "}                                                  \n";
 #else
         const string fShaderStr =  
-            "#version 150                                       \n"
-            "                                                   \n"
+            "#version 140                                         \n"
+            "                                                     \n"
             "precision mediump float;                             \n"
             "                                                     \n"
             "uniform sampler2D u_texture_0;                       \n"
@@ -97,9 +97,9 @@ namespace Offender {
             "                                                     \n"
             "void main()                                          \n"
             "{                                                    \n"
-            "  vec4 grass = v_TexWeightings[0] * texture2D(u_texture_0, v_TexCoord); \n"
-            "  vec4 rock  = v_TexWeightings[1] * texture2D(u_texture_1, v_TexCoord); \n"
-            "  vec4 snow  = v_TexWeightings[2] * texture2D(u_texture_2, v_TexCoord); \n"
+            "  vec4 grass = vec4(v_TexWeightings[0] * texture(u_texture_0, v_TexCoord)); \n"
+            "  vec4 rock  = vec4(v_TexWeightings[1] * texture(u_texture_1, v_TexCoord)); \n"
+            "  vec4 snow  = vec4(v_TexWeightings[2] * texture(u_texture_2, v_TexCoord)); \n"
             "  colourout  = vec4(v_LightIntensity, 1.0) * (grass + rock + snow);  \n"
             //"  gl_FragColor = vec4(v_LightIntensity, 1.0) * (grass + rock + snow);  \n"
             "}                                                    \n";

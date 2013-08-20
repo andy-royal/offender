@@ -64,7 +64,7 @@ namespace Offender {
 
     GLuint Object::DefaultProgram() {
         const string vShaderStr =
-            "#version 150                                       \n"
+            "#version 140                                       \n"
             "                                                   \n"
             "uniform mat4  u_ModelViewMatrix;                   \n"
             "uniform mat4  u_MVPMatrix;                         \n"
@@ -96,7 +96,7 @@ namespace Offender {
             "  v_colour = u_colour * vec4(l_LightIntensity, 1.0);  \n"
             "}                                                  \n";
         const string fShaderStr =  
-            "#version 150                                       \n"
+            "#version 140                                       \n"
             "                                                   \n"
             "precision mediump float;                           \n"
             "                                                   \n"

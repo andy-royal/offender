@@ -139,4 +139,8 @@ namespace Offender {
         }
     }
 
+    ObjVec World::GetGravity(Object* l_object) {
+        return ObjVec(0.0f, -STANDARD_GRAVITY, 0.0f);
+    }
+
 } // namespace Offender

@@ -8,6 +8,8 @@ namespace Offender {
 
     Player::Player(World* l_world, ObjPos l_pos, ObjVec l_vec, ObjQuat l_orient) :
                    AlienShip(l_world, l_pos, l_vec, l_orient)  {
+        m_rotation = 0;
+        m_tilt = 0;
     }
 
     void Player::CollisionHandler() {
@@ -23,6 +25,7 @@ namespace Offender {
 #else
         if (!GetDeathThroes()) {
             MouseInfo* l_mouseinfo = GetWorld()->GetDisplayContext()->MouseInfo();
+#if 0
             Vector<OBJ_NUMTYPE> rot_axis(static_cast<OBJ_NUMTYPE>(l_mouseinfo->GetYDelta()),0.0f,static_cast<OBJ_NUMTYPE>(-l_mouseinfo->GetXDelta()));
             // Multiply it by orientation
             rot_axis = rot_axis * GetOrientation();
@@ -36,7 +39,21 @@ namespace Offender {
             l_direction = l_direction * GetOrientation();
             SetVelocity(0.5f * l_direction);
             //SetVelocity(5.0f * l_direction);
+#else
+            ObjVec acceleration = GetWorld()->GetGravity(this);
+            m_rotation -= l_mouseinfo->GetXDelta() * ROTATION_SPEED;
+            m_tilt += l_mouseinfo->GetYDelta() * ROTATION_SPEED;
+            AngleAndAxis<OBJ_NUMTYPE> rotation_x(m_rotation, ObjVec(0.0f, 1.0f, 0.0f));
+            AngleAndAxis<OBJ_NUMTYPE> rotation_y(m_tilt, ObjVec(1.0f, 0.0f, 0.0f));
+            SetOrientation(rotation_x.ToQuaternion() * rotation_y.ToQuaternion());
 
+            if (l_mouseinfo->GetLeftDown()) {
+                ObjVec l_direction(0.0f, 1.0f, 0.0f);
+                l_direction = l_direction * GetOrientation();
+                acceleration = acceleration + (l_direction * STANDARD_GRAVITY * 4);
+            }
+            SetVelocity(GetVelocity() + acceleration);
+#endif
             // Move
             SetPosition(GetPosition() + GetVelocity());
 

@@ -415,7 +415,8 @@ bool WindowsDisplayContext::RegisterInputs() {
         
     Rid[0].usUsagePage = 0x01; 
     Rid[0].usUsage = 0x02; 
-    Rid[0].dwFlags = RIDEV_NOLEGACY;   // adds HID mouse and also ignores legacy mouse messages
+    Rid[0].dwFlags = RIDEV_NOLEGACY |       // adds HID mouse and also ignores legacy mouse messages
+                     RIDEV_CAPTUREMOUSE;    // Don't go to another window if click is outside this one
     Rid[0].hwndTarget = m_hWnd;
 
     if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE) {

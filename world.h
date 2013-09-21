@@ -11,6 +11,8 @@
 using namespace std;
 using namespace OpenGLUtils;
 
+#define STANDARD_GRAVITY (9.81f / (60.0f * 60.0f * 20.0f))
+
 namespace Offender {
 
     class Object; // Forward declaration
@@ -39,6 +41,7 @@ namespace Offender {
             GLboolean       Iteration();
             void            SetCameraTarget(Object* l_target) { m_camera_target = l_target; };
             void            EndOfTheWorld() {};
+            ObjVec          GetGravity(Object* l_object);
     };
 
 } // namespace Offender

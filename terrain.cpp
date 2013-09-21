@@ -644,7 +644,6 @@ namespace Offender {
 #ifdef MEASURE_TERRAIN_INIT_TIMES
     void Terrain::ReportTimes() {
         char message[1000];
-        float arse = static_cast<float>(m_init_done_time - m_init_start_time)/CLOCKS_PER_SEC;
         sprintf(message, "Vertex generation %.3fs\n"
                          "Vertex normal calculation %.3fs\n"
                          "Index calculation %.3fs\n"

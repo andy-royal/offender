@@ -13,6 +13,8 @@
 #include "opengl_utils.h"
 #endif
 
+//#define MEASURE_FRAME_RATE
+
 using namespace Offender;
 
 #ifdef _WINDOWS
@@ -141,30 +143,6 @@ LRESULT CALLBACK myContext::MsgProc( HWND    hWnd,             // Handle For Thi
             return 0;                                // Jump Back
         }
 
-        case WM_LBUTTONDOWN:
-        {
-            MouseInfo()->SetLeftDown(GL_TRUE);
-            return 0;
-        }
-
-        case WM_LBUTTONUP:
-        {
-            MouseInfo()->SetLeftDown(GL_TRUE);
-            return 0;
-        }
-
-        case WM_RBUTTONDOWN:
-        {
-            MouseInfo()->SetRightDown(GL_TRUE);
-            return 0;
-        }
-
-        case WM_RBUTTONUP:
-        {
-            MouseInfo()->SetRightDown(GL_TRUE);
-            return 0;
-        }
-
         case WM_INPUT:
         {
             UINT dwSize;
@@ -187,6 +165,17 @@ LRESULT CALLBACK myContext::MsgProc( HWND    hWnd,             // Handle For Thi
             {
                 MouseInfo()->AddMouseMove(raw->data.mouse.lLastX, raw->data.mouse.lLastY);
             }
+
+            USHORT buttons = raw->data.mouse.usButtonFlags;
+            if (buttons & RI_MOUSE_LEFT_BUTTON_DOWN)
+                MouseInfo()->SetLeftDown(GL_TRUE);
+            if (buttons & RI_MOUSE_LEFT_BUTTON_UP)
+                MouseInfo()->SetLeftDown(GL_FALSE);
+            if (buttons & RI_MOUSE_RIGHT_BUTTON_DOWN)
+                MouseInfo()->SetRightDown(GL_TRUE);
+            if (buttons & RI_MOUSE_RIGHT_BUTTON_UP)
+                MouseInfo()->SetRightDown(GL_FALSE);
+
             delete[] lpb;
             return 0;
         }
@@ -211,9 +200,12 @@ int WINAPI WinMain( HINSTANCE    hInstance,            // Instance
 //#endif
 
     myContext LocalContext;
-    MSG     msg;                                       // Windows Message Structure
-    BOOL    done=FALSE;                                // Bool Variable To Exit Loop
-    static uint64_t arse = 0;
+    MSG       msg;                                       // Windows Message Structure
+    BOOL      done=FALSE;                                // Bool Variable To Exit Loop
+#ifdef MEASURE_FRAME_RATE
+    clock_t   start_time, end_time;
+    uint32_t  frames = ~uint32_t(0);
+#endif
 
     // Create Our OpenGL Window
     if (!LocalContext.Initialise("Offender"))
@@ -263,6 +255,12 @@ int WINAPI WinMain( HINSTANCE    hInstance,            // Instance
             {
                 if (CheckForOpenGLErrors()) {
                     LocalContext.SwapBuff();
+#ifdef MEASURE_FRAME_RATE
+                    frames++;
+                    if (frames == 0)
+                        start_time = clock();
+                    end_time = clock();
+#endif
                 } else {
                     return 0;
                 }
@@ -281,6 +279,14 @@ int WINAPI WinMain( HINSTANCE    hInstance,            // Instance
             }
         }
     }
+
+#ifdef MEASURE_FRAME_RATE
+    char message[1000];
+    sprintf(message, "Average frame rate %.2fHz\n", static_cast<float>(CLOCKS_PER_SEC * frames / (end_time - start_time)));
+    OLECHAR winfo[MAX_PATH+1];
+    MultiByteToWideChar(CP_ACP, 0, message, -1, winfo, MAX_PATH);
+    MessageBox(NULL,winfo,TEXT("Average frame rate"),MB_OK|MB_ICONEXCLAMATION);
+#endif
 
     // Shutdown
     LocalContext.KillGLWindow();                     // Kill The Window

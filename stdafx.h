@@ -37,6 +37,7 @@
 #include <olectl.h>
 #include <list>
 #include <map>
+#include <string>
 #include <vector>
 #include <boost/crc.hpp>
 #include <time.h>

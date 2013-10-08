@@ -29,6 +29,19 @@ namespace Offender {
             Object*                  m_camera_target;
             OBJ_NUMTYPE              m_camera_chase_distance;
             void                     MoveCamera();
+
+            // Factory
+            // CreateFunc can't be static if we need to use member functions or this. Hence PCreateFunc Must be a
+            // pointer to member function, as pointers to global functions are only compatible with static member
+            // functions.
+            template <typename T> Object* CreateFunc(ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
+                Object* tmp = new T(this, l_position, l_velocity, l_orientation);
+                AddObject(tmp);
+                return tmp;
+            }
+            typedef Object* (World::*PCreateFunc)(ObjPos, ObjVec, ObjQuat);
+            map<string,PCreateFunc>  m_CreateFuncs;    // This requires #include <string>
+
         public:
             World(DisplayContext*);
             DisplayContext* GetDisplayContext() { return m_display_context; };
@@ -42,6 +55,14 @@ namespace Offender {
             void            SetCameraTarget(Object* l_target) { m_camera_target = l_target; };
             void            EndOfTheWorld() {};
             ObjVec          GetGravity(Object* l_object);
+
+            // Factory continued. Again note pointer to member function.
+            template <typename T> void Register(const char* name) {
+                m_CreateFuncs[name] = &World::CreateFunc<T>;
+            }
+            Object* GetInstance(string l_name, ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
+                return (this->*m_CreateFuncs[l_name])(l_position, l_velocity, l_orientation);
+            }
     };
 
 } // namespace Offender

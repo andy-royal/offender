@@ -13,14 +13,12 @@
 
 namespace Offender {
 
-    class Player : public AlienShip {
+    class Player : public Object {
         private:
-            GLuint          m_vertexBuffer;
-            GLuint          m_indexBuffer;
             GLfloat         m_rotation;
             GLfloat         m_tilt;
         public:
-            Player(World*, ObjPos, ObjVec, ObjQuat);
+            Player(World*, RenderGroup*, Mesh*, ObjPos, ObjVec, ObjQuat);
             void            CollisionHandler();
             GLboolean       Move();
     };

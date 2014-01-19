@@ -348,21 +348,21 @@ namespace Offender {
 #endif
 
 #ifdef WIREFRAME
-        auto_ptr<GLuint> indices(new GLuint[2 * (m_terrain_width + 1) * (m_terrain_depth + 1)]);
+        auto_ptr<GLuint> m_indices(new GLuint[2 * (m_terrain_width + 1) * (m_terrain_depth + 1)]);
         for (GLuint point = 0; point < ((m_terrain_width + 1) * (m_terrain_depth + 1)); point++) {
-            indices.get()[point] = point;
+            m_indices.get()[point] = point;
         }
         for (row = 0; row <= m_terrain_depth; row++) {
             for (column = 0; column <= m_terrain_width; column++) {
-                indices.get()[((m_terrain_width + 1) * (m_terrain_depth + 1)) + column + (row * (m_terrain_width+1))] = column * (m_terrain_depth+1) + row;
+                m_indices.get()[((m_terrain_width + 1) * (m_terrain_depth + 1)) + column + (row * (m_terrain_width+1))] = column * (m_terrain_depth+1) + row;
             }
         }
 #else
-        auto_ptr<GLuint> indices(new GLuint[2 * m_terrain_width * (m_terrain_depth + 1)]);
+        auto_ptr<GLuint> m_indices(new GLuint[2 * m_terrain_width * (m_terrain_depth + 1)]);
         for (column = 0; column < m_terrain_width; column++) {
             for (row = 0; row < (m_terrain_depth+1); row++) {
-                indices.get()[row * 2 + column * (m_terrain_depth+1) * 2] = column * (m_terrain_depth+1) + row;
-                indices.get()[row * 2 + column * (m_terrain_depth+1) * 2 + 1] = (column+1) * (m_terrain_depth+1) + row;
+                m_indices.get()[row * 2 + column * (m_terrain_depth+1) * 2] = column * (m_terrain_depth+1) + row;
+                m_indices.get()[row * 2 + column * (m_terrain_depth+1) * 2 + 1] = (column+1) * (m_terrain_depth+1) + row;
             }
         }
 #endif
@@ -388,9 +388,9 @@ namespace Offender {
         glGenBuffers(1, &m_indexBuffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
 #ifdef WIREFRAME
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * (m_terrain_width + 1) * (m_terrain_depth + 1) * sizeof(GLuint), indices.get(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * (m_terrain_width + 1) * (m_terrain_depth + 1) * sizeof(GLuint), m_indices.get(), GL_STATIC_DRAW);
 #else
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * m_terrain_width * (m_terrain_depth + 1) * sizeof(GLuint), indices.get(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * m_terrain_width * (m_terrain_depth + 1) * sizeof(GLuint), m_indices.get(), GL_STATIC_DRAW);
 #endif
 
         glVertexAttribPointer (10, 3, GL_FLOAT, GL_FALSE, sizeof(vertexStruct), reinterpret_cast<void*>(offsetof(vertexStruct,position)));

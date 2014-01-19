@@ -3,14 +3,11 @@
 
 namespace Offender {
 
-    class AlienShip : public Object {
+    class AlienShip : public Mesh {
         private:
-            GLuint          m_vertexBuffer;
-            GLuint          m_indexBuffer;
-            GLuint          m_vao;
             void            InitGeometry();
         public:
-            AlienShip(World*, ObjPos, ObjVec, ObjQuat);
+            AlienShip();
             GLboolean       Draw();
     };
 

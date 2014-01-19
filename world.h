@@ -20,6 +20,7 @@ namespace Offender {
     class World {
         private:
             DisplayContext*          m_display_context;
+            RenderGroup              m_render;
             list<auto_ptr<Object>>   m_objects;
             ObjMat                   m_ViewPersp;
             ObjMat                   m_View;
@@ -31,20 +32,22 @@ namespace Offender {
             void                     MoveCamera();
 
             // Factory
-            // CreateFunc can't be static if we need to use member functions or this. Hence PCreateFunc Must be a
+            // CreateFunc can't be static if we need to use member functions or this. Hence PCreateFunc must be a
             // pointer to member function, as pointers to global functions are only compatible with static member
             // functions.
-            template <typename T> Object* CreateFunc(ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
-                Object* tmp = new T(this, l_position, l_velocity, l_orientation);
+            template <typename T> Object* CreateFunc(Mesh* l_mesh, ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
+                Object* tmp = new T(this, &m_render, l_mesh, l_position, l_velocity, l_orientation);
                 AddObject(tmp);
+                m_render.AddObject(tmp);
                 return tmp;
             }
-            typedef Object* (World::*PCreateFunc)(ObjPos, ObjVec, ObjQuat);
-            map<string,PCreateFunc>  m_CreateFuncs;    // This requires #include <string>
+            typedef Object* (World::*PCreateFunc)(Mesh*, ObjPos, ObjVec, ObjQuat);
+            map<string,PCreateFunc>  m_CreateFuncs;    // This requires #include <string>, and gives really weird errors without it
 
         public:
             World(DisplayContext*);
             DisplayContext* GetDisplayContext() { return m_display_context; };
+            RenderGroup*    GetRendergroup() { return &m_render; };
             ObjMat          GetView() { return m_View; };
             ObjMat          GetViewPersp() { return m_ViewPersp; };
             GLboolean       AddObject(Object*);
@@ -60,8 +63,8 @@ namespace Offender {
             template <typename T> void Register(const char* name) {
                 m_CreateFuncs[name] = &World::CreateFunc<T>;
             }
-            Object* GetInstance(string l_name, ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
-                return (this->*m_CreateFuncs[l_name])(l_position, l_velocity, l_orientation);
+            Object* GetInstance(string l_name, Mesh* l_mesh, ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
+                return (this->*m_CreateFuncs[l_name])(l_mesh, l_position, l_velocity, l_orientation);
             }
     };
 

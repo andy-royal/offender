@@ -56,9 +56,6 @@ namespace Offender {
                     it->get()->CollisionHandler();
                 }
             }
-            //if (m_Terrain.CheckForCollision(it->get())) {
-            //    it->get()->CollisionHandler();
-            //}
         }
 
         return GL_TRUE;
@@ -92,13 +89,8 @@ namespace Offender {
             }
         }
 
-        // Draw each object
-        list<auto_ptr<Object>>::iterator it;
-        for (it = m_objects.begin(); it != m_objects.end(); it++) {
-            if (!it->get()->Draw()) {
-                return GL_FALSE;
-            }
-        }
+        // Draw render group
+        m_render.Draw();
 
         return GL_TRUE;
     }

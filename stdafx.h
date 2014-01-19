@@ -48,6 +48,8 @@
 
 #include "opengl_utils.h"
 #include "object.h"
+#include "mesh.h"
+#include "rendergroup.h"
 #include "camera.h"
 #include "terrain.h"
 #include "world.h"

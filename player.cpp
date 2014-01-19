@@ -6,8 +6,8 @@
 
 namespace Offender {
 
-    Player::Player(World* l_world, ObjPos l_pos, ObjVec l_vec, ObjQuat l_orient) :
-                   AlienShip(l_world, l_pos, l_vec, l_orient)  {
+    Player::Player(World* l_world, RenderGroup* l_render, Mesh* l_mesh, ObjPos l_pos, ObjVec l_vec, ObjQuat l_orient) :
+                   Object(l_world, l_render, l_mesh, l_pos, l_vec, l_orient)  {
         m_rotation = 0;
         m_tilt = 0;
     }

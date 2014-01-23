@@ -66,7 +66,7 @@ World* Init (DisplayContext* l_Context)
     l_world->Register<Player>("Player");
 
     RenderGroup* l_rendergroup = l_world->GetRendergroup();
-    Mesh* l_mesh = new AlienShip();
+    Mesh* l_mesh = new Mesh("alienship");
     l_rendergroup->AddMesh(l_mesh);
 
 #ifdef SCREENSHOT

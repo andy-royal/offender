@@ -41,6 +41,7 @@
 #include <vector>
 #include <boost/crc.hpp>
 #include <time.h>
+#include <fstream>
 
 #define GLEW_STATIC
 #include "gl\glew.h"
@@ -53,6 +54,5 @@
 #include "camera.h"
 #include "terrain.h"
 #include "world.h"
-#include "meshes/alienship.h"
 #include "player.h"
 #endif

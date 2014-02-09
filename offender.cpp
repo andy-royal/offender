@@ -141,11 +141,12 @@ LRESULT CALLBACK myContext::MsgProc( HWND    hWnd,             // Handle For Thi
             return 0;                                // Jump Back
         }
 
-        case WM_SIZE:                                // Resize The OpenGL Window
-        {
-            ReSizeGLScene(LOWORD(lParam),HIWORD(lParam));  // LoWord=Width, HiWord=Height
-            return 0;                                // Jump Back
-        }
+        // Don't worry about resizing as with raw input we can only switch between windowed and fullscreen which is entirely within our control
+        //case WM_SIZE:                                // Resize The OpenGL Window
+        //{
+        //    ReSizeGLScene(LOWORD(lParam),HIWORD(lParam));  // LoWord=Width, HiWord=Height
+        //    return 0;                                // Jump Back
+        //}
 
         case WM_INPUT:
         {
@@ -273,13 +274,8 @@ int WINAPI WinMain( HINSTANCE    hInstance,            // Instance
             if (keys[VK_F1])                         // Is F1 Being Pressed?
             {
                 keys[VK_F1]=FALSE;                   // If So Make Key FALSE
-                LocalContext.KillGLWindow();         // Kill Our Current Window
                 LocalContext.ToggleFullScreen();     // Toggle Fullscreen / Windowed Mode
-                // Recreate Our OpenGL Window
-                if (!LocalContext.Initialise("Offender"))
-                {
-                    return 0;                        // Quit If Window Was Not Created
-                }
+                LocalContext.ReSizeWindow();
             }
         }
     }

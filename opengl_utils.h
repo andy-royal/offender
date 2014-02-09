@@ -62,6 +62,7 @@ namespace OpenGLUtils {
     void GenericErrorDumper(string& text);
     void DumpOpenGLError(GLenum status);
     GLboolean CheckForOpenGLErrors();
+    void DumpDisplayError(long);
 
     class MouseInfo {
         private:
@@ -108,6 +109,7 @@ namespace OpenGLUtils {
             virtual void SwapBuff() =0;
             void ReSizeGLScene();
             void ReSizeGLScene(uint32_t,uint32_t);
+            virtual void ReSizeWindow() =0;
 #ifndef _WINDOWS
             int TakeScreenShot(const char *);
 #endif
@@ -122,9 +124,14 @@ namespace OpenGLUtils {
             //HINSTANCE    m_hInstance;      // Holds The Instance Of The Application
             bool         m_fullscreen;
             bool         m_active;
+            int          m_bits;
         public:
             WindowsDisplayContext();
             void SwapBuff();
+            void ReSizeWindow();
+            DWORD GetdwExStyle();
+            DWORD GetdwStyle();
+            bool SetDisplayMode();
             bool Init(const wchar_t * title, int bits);
             void KillGLWindow();
             HDC hDC() { return m_hDC; };

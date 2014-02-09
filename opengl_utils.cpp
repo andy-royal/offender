@@ -56,6 +56,36 @@ void DumpOpenGLError(GLenum status) {
     }
 }
 
+void DumpDisplayError(long status) {
+    switch (status)
+    {
+        case DISP_CHANGE_BADDUALVIEW:
+            GenericErrorDumper("DISP_CHANGE_BADDUALVIEW: The settings change was unsuccessful because the system is DualView capable.");
+            break;
+        case DISP_CHANGE_BADFLAGS:
+            GenericErrorDumper("DISP_CHANGE_BADFLAGS: An invalid set of flags was passed in.");
+            break;
+        case DISP_CHANGE_BADMODE:
+            GenericErrorDumper("DISP_CHANGE_BADMODE: The graphics mode is not supported.");
+            break;
+        case DISP_CHANGE_BADPARAM:
+            GenericErrorDumper("DISP_CHANGE_BADPARAM: An invalid parameter was passed in. This can include an invalid flag or combination of flags.");
+            break;
+        case DISP_CHANGE_FAILED:
+            GenericErrorDumper("DISP_CHANGE_FAILED: The display driver failed the specified graphics mode.");
+            break;
+        case DISP_CHANGE_NOTUPDATED:
+            GenericErrorDumper("DISP_CHANGE_NOTUPDATED: Unable to write settings to the registry.");
+            break;
+        case DISP_CHANGE_RESTART:
+            GenericErrorDumper("DISP_CHANGE_RESTART: The computer must be restarted for the graphics mode to work.");
+            break;
+        default:
+            GenericErrorDumper("Muh?");
+            break;
+    }
+}
+
 GLboolean CheckForOpenGLErrors() {
     GLenum status = glGetError();
     if (status != GL_NO_ERROR) {
@@ -132,18 +162,94 @@ WindowsDisplayContext::WindowsDisplayContext() {
     }
 }
 
-bool WindowsDisplayContext::Init(const wchar_t * title, int bits) {
-    WNDCLASS    wc;                        // Windows Class Structure
-    DWORD       dwExStyle;                 // Window Extended Style
-    DWORD       dwStyle;                   // Window Style
-    RECT        WindowRect;                // Grabs Rectangle Upper Left / Lower Right Values
-    HINSTANCE   hInstance;
-    HGLRC       tempContext;
+void WindowsDisplayContext::ReSizeWindow() {
+    RECT WindowRect;
+
+    // Need to do this before we set size, as these might trigger WM_SIZE which could change size back again
+    SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, GetdwExStyle());
+    SetWindowLongPtr(m_hWnd, GWL_STYLE, GetdwStyle());
+
+    if (m_fullscreen) {
+        SetSize(1680, 1050);
+        SetOffset(0, 0);
+    } else {
+        SetSize(1200, 900);
+        SetOffset(200, 50);
+    }
 
     WindowRect.left=(long)0;               // Set Left Value To 0
     WindowRect.right=(long)GetWidth();     // Set Right Value To Requested Width
     WindowRect.top=(long)0;                // Set Top Value To 0
     WindowRect.bottom=(long)GetHeight();   // Set Bottom Value To Requested Height
+
+    AdjustWindowRectEx(&WindowRect, GetdwStyle(), FALSE, GetdwExStyle());        // Adjust Window To True Requested Size
+    SetWindowPos(m_hWnd, 0, GetOffsetX(), GetOffsetY(), GetWidth(), GetHeight(), SWP_NOZORDER | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+    ReSizeGLScene();
+}
+
+DWORD WindowsDisplayContext::GetdwExStyle() {
+    DWORD dwExStyle;
+    dwExStyle = WS_EX_APPWINDOW;
+    if (!m_fullscreen) {
+        dwExStyle |= WS_EX_WINDOWEDGE;
+    }
+    return dwExStyle;
+}
+
+DWORD WindowsDisplayContext::GetdwStyle() {
+    DWORD dwStyle;
+    dwStyle = WS_CLIPSIBLINGS |
+              WS_CLIPCHILDREN;
+    if (m_fullscreen) {
+        dwStyle |= WS_POPUP;
+    } else {
+        dwStyle |= WS_OVERLAPPEDWINDOW;
+    }
+    return dwStyle;
+}
+
+bool WindowsDisplayContext::SetDisplayMode() {
+    if (m_fullscreen) {
+        DEVMODE dmScreenSettings;                                // Device Mode
+        memset(&dmScreenSettings,0,sizeof(dmScreenSettings));    // Makes Sure Memory's Cleared
+        dmScreenSettings.dmSize=sizeof(dmScreenSettings);        // Size Of The Devmode Structure
+        dmScreenSettings.dmPelsWidth    = GetWidth();            // Selected Screen Width
+        dmScreenSettings.dmPelsHeight   = GetHeight();           // Selected Screen Height
+        dmScreenSettings.dmBitsPerPel   = m_bits;                // Selected Bits Per Pixel
+        dmScreenSettings.dmFields=DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
+
+        // Try To Set Selected Mode And Get Results.  NOTE: CDS_FULLSCREEN Gets Rid Of Start Bar.
+        // ChangeDisplaySettingsEx(NULL, &dmScreenSettings, m_hWnd, CDS_FULLSCREEN, NULL)
+        long status = ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN);
+        if (status != DISP_CHANGE_SUCCESSFUL) {
+            // If The Mode Fails, Offer Two Options.  Quit Or Use Windowed Mode.
+            DumpDisplayError(status);
+            if (MessageBox(NULL,L"The Requested Fullscreen Mode Is Not Supported By\nYour Video Card. Use Windowed Mode Instead?",L"ERROR",MB_YESNO|MB_ICONEXCLAMATION)==IDYES)
+            {
+                m_fullscreen=FALSE;        // Windowed Mode Selected.  Fullscreen = FALSE
+            }
+            else
+            {
+                // Pop Up A Message Box Letting User Know The Program Is Closing.
+                MessageBox(NULL,L"Program Will Now Close.",L"ERROR",MB_OK|MB_ICONSTOP);
+                return FALSE;
+            }
+        }
+    } else {
+        if (ChangeDisplaySettings(0, 0) != DISP_CHANGE_SUCCESSFUL) {
+            MessageBox(NULL,L"Failed to clear display settings.",L"ERROR",MB_OK|MB_ICONSTOP);
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+bool WindowsDisplayContext::Init(const wchar_t * title, int bits) {
+    WNDCLASS    wc;                        // Windows Class Structure
+    HINSTANCE   hInstance;
+    HGLRC       tempContext;
 
     hInstance           = GetModuleHandle(NULL);                // Grab An Instance For Our Window
     wc.style            = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;   // Redraw On Size, And Own DC For Window.
@@ -162,58 +268,23 @@ bool WindowsDisplayContext::Init(const wchar_t * title, int bits) {
         MessageBox(NULL,L"Failed To Register the OpenGL Window Class.",L"ERROR",MB_OK|MB_ICONEXCLAMATION);
         return FALSE;                                            // Return FALSE
     }
-    
-    if (m_fullscreen)                                                // Attempt Fullscreen Mode?
-    {
-        DEVMODE dmScreenSettings;                                // Device Mode
-        memset(&dmScreenSettings,0,sizeof(dmScreenSettings));    // Makes Sure Memory's Cleared
-        dmScreenSettings.dmSize=sizeof(dmScreenSettings);        // Size Of The Devmode Structure
-        dmScreenSettings.dmPelsWidth    = GetWidth();            // Selected Screen Width
-        dmScreenSettings.dmPelsHeight   = GetHeight();           // Selected Screen Height
-        dmScreenSettings.dmBitsPerPel   = bits;                  // Selected Bits Per Pixel
-        dmScreenSettings.dmFields=DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
 
-        // Try To Set Selected Mode And Get Results.  NOTE: CDS_FULLSCREEN Gets Rid Of Start Bar.
-        if (ChangeDisplaySettings(&dmScreenSettings,CDS_FULLSCREEN)!=DISP_CHANGE_SUCCESSFUL)
-        {
-            // If The Mode Fails, Offer Two Options.  Quit Or Use Windowed Mode.
-            if (MessageBox(NULL,L"The Requested Fullscreen Mode Is Not Supported By\nYour Video Card. Use Windowed Mode Instead?",L"ERROR",MB_YESNO|MB_ICONEXCLAMATION)==IDYES)
-            {
-                m_fullscreen=FALSE;        // Windowed Mode Selected.  Fullscreen = FALSE
-            }
-            else
-            {
-                // Pop Up A Message Box Letting User Know The Program Is Closing.
-                MessageBox(NULL,L"Program Will Now Close.",L"ERROR",MB_OK|MB_ICONSTOP);
-                return FALSE;                                    // Return FALSE
-            }
-        }
+    // Set bits per pixel and set display mode
+    m_bits = bits;
+    if (!SetDisplayMode()) {
+        return FALSE;
     }
 
-    if (m_fullscreen)                                            // Are We Still In Fullscreen Mode?
-    {
-        dwExStyle=WS_EX_APPWINDOW;                               // Window Extended Style
-        dwStyle=WS_POPUP;                                        // Windows Style
-    }
-    else
-    {
-        dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;            // Window Extended Style
-        dwStyle=WS_OVERLAPPEDWINDOW;                             // Windows Style
-    }
     ShowCursor(FALSE);                                           // Hide Mouse Pointer
 
-    AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);        // Adjust Window To True Requested Size
-
     // Create The Window
-    if (!(m_hWnd=CreateWindowEx(  dwExStyle,                          // Extended Style For The Window
+    if (!(m_hWnd=CreateWindowEx(  GetdwExStyle(),                     // Extended Style For The Window
                                   L"OpenGL",                          // Class Name
                                   title,                              // Window Title
-                                  dwStyle |                           // Defined Window Style
-                                  WS_CLIPSIBLINGS |                   // Required Window Style
-                                  WS_CLIPCHILDREN,                    // Required Window Style
+                                  GetdwStyle(),
                                   GetOffsetX(), GetOffsetY(),         // Window Position
-                                  WindowRect.right-WindowRect.left,   // Calculate Window Width
-                                  WindowRect.bottom-WindowRect.top,   // Calculate Window Height
+                                  GetWidth(),                         // Calculate Window Width
+                                  GetHeight(),                        // Calculate Window Height
                                   NULL,                               // No Parent Window
                                   NULL,                               // No Menu
                                   hInstance,                          // Instance
@@ -234,7 +305,7 @@ bool WindowsDisplayContext::Init(const wchar_t * title, int bits) {
         PFD_SUPPORT_OPENGL |                        // Format Must Support OpenGL
         PFD_DOUBLEBUFFER,                            // Must Support Double Buffering
         PFD_TYPE_RGBA,                                // Request An RGBA Format
-        bits,                                        // Select Our Color Depth
+        m_bits,                                        // Select Our Color Depth
         0, 0, 0, 0, 0, 0,                            // Color Bits Ignored
         0,                                            // No Alpha Buffer
         0,                                            // Shift Bit Ignored

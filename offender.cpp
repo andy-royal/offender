@@ -66,8 +66,6 @@ World* Init (DisplayContext* l_Context)
     l_world->Register<Player>("Player");
 
     RenderGroup* l_rendergroup = l_world->GetRendergroup();
-    Mesh* l_mesh = new Mesh("alienship");
-    l_rendergroup->AddMesh(l_mesh);
 
 #ifdef SCREENSHOT
     Object* l_player = l_world->GetInstance("Player", ObjPos(0.0f, 1300.0f, 3000.0f),
@@ -75,9 +73,9 @@ World* Init (DisplayContext* l_Context)
                                                       ObjQuat(cos(static_cast<OBJ_NUMTYPE>(-M_PI)/16.0f), sin(static_cast<OBJ_NUMTYPE>(-M_PI)/16.0f), 0.0f, 0.0f));
 
 #else
-    Object* l_player = l_world->GetInstance("Player", l_mesh, ObjPos(0.0f, 700.0f, 2500.0f),
-                                                              ObjVec(0.0f, 0.0f, 0.0f),
-                                                              ObjQuat(1.0f, 0.0f, 0.0f, 0.0f));
+    Object* l_player = l_world->GetInstance("Player", ObjPos(0.0f, 700.0f, 2500.0f),
+                                                      ObjVec(0.0f, 0.0f, 0.0f),
+                                                      ObjQuat(1.0f, 0.0f, 0.0f, 0.0f));
 #endif
     l_rendergroup->SetupBuffers();
     l_world->SetCameraTarget(l_player);

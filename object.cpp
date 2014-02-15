@@ -9,16 +9,11 @@ using namespace OpenGLUtils;
 
 namespace Offender {
 
-    Object::Object(World* l_world, RenderGroup* l_render, Mesh* l_mesh, ObjPos l_pos, ObjVec l_vec, ObjQuat l_orient) :
+    Object::Object(World* l_world, RenderGroup* l_render, ObjPos l_pos, ObjVec l_vec, ObjQuat l_orient) :
                    m_Position(l_pos), m_Velocity(l_vec), m_Orientation(l_orient) {
         m_world = l_world;
         m_rendergroup = l_render;
-        m_mesh = l_mesh;
         m_DeathThroes = GL_FALSE;
-    }
-
-    OBJ_NUMTYPE Object::GetCollisionRadius() {
-        return m_mesh->GetCollisionRadius();
     }
 
     GLboolean Object::Draw() {
@@ -50,7 +45,7 @@ namespace Offender {
         glUniform3f(m_rendergroup->GetLsHandle(), 1.0f, 1.0f, 1.0f);
         glUniform1f(m_rendergroup->GetShininessHandle(), 1.0f);
 
-        m_mesh->Draw();
+        DrawMeshes();
 
         return GL_TRUE;
     }

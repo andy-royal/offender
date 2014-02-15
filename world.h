@@ -35,13 +35,10 @@ namespace Offender {
             // CreateFunc can't be static if we need to use member functions or this. Hence PCreateFunc must be a
             // pointer to member function, as pointers to global functions are only compatible with static member
             // functions.
-            template <typename T> Object* CreateFunc(Mesh* l_mesh, ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
-                Object* tmp = new T(this, &m_render, l_mesh, l_position, l_velocity, l_orientation);
-                AddObject(tmp);
-                m_render.AddObject(tmp);
-                return tmp;
+            template <typename T> Object* CreateFunc(ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
+                return new T(this, &m_render, l_position, l_velocity, l_orientation);
             }
-            typedef Object* (World::*PCreateFunc)(Mesh*, ObjPos, ObjVec, ObjQuat);
+            typedef Object* (World::*PCreateFunc)(ObjPos, ObjVec, ObjQuat);
             map<string,PCreateFunc>  m_CreateFuncs;    // This requires #include <string>, and gives really weird errors without it
 
         public:
@@ -62,9 +59,15 @@ namespace Offender {
             // Factory continued. Again note pointer to member function.
             template <typename T> void Register(const char* name) {
                 m_CreateFuncs[name] = &World::CreateFunc<T>;
+                Mesh* l_mesh = new Mesh(T::GetMeshName());
+                m_render.AddMesh(l_mesh);
+                T::SetMesh(l_mesh);
             }
-            Object* GetInstance(string l_name, Mesh* l_mesh, ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
-                return (this->*m_CreateFuncs[l_name])(l_mesh, l_position, l_velocity, l_orientation);
+            Object* GetInstance(string l_name, ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
+                Object* tmp = (this->*m_CreateFuncs[l_name])(l_position, l_velocity, l_orientation);
+                AddObject(tmp);
+                m_render.AddObject(tmp);
+                return tmp;
             }
     };
 

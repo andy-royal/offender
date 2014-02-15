@@ -6,11 +6,13 @@
 
 namespace Offender {
 
-    Player::Player(World* l_world, RenderGroup* l_render, Mesh* l_mesh, ObjPos l_pos, ObjVec l_vec, ObjQuat l_orient) :
-                   Object(l_world, l_render, l_mesh, l_pos, l_vec, l_orient)  {
+    Player::Player(World* l_world, RenderGroup* l_render, ObjPos l_pos, ObjVec l_vec, ObjQuat l_orient) :
+                   Object(l_world, l_render, l_pos, l_vec, l_orient)  {
         m_rotation = 0;
         m_tilt = 0;
     }
+
+    Mesh* Player::m_mesh;
 
     void Player::CollisionHandler() {
         //MessageBox(NULL,L"Oh dear, you crashed.",L"SPLAT",MB_OK|MB_ICONEXCLAMATION);
@@ -65,6 +67,15 @@ namespace Offender {
 #endif
 
         return GL_TRUE;
+    }
+
+    GLboolean Player::DrawMeshes() {
+        m_mesh->Draw();
+        return GL_TRUE;
+    }
+
+    OBJ_NUMTYPE Player::GetCollisionRadius() {
+        return m_mesh->GetCollisionRadius();
     }
 
 }

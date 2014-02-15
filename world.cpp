@@ -3,6 +3,7 @@
 #ifndef _WINDOWS
 #include "world.h"
 #include "object.h"
+#include "camera.h"
 #endif
 
 namespace Offender {
@@ -11,7 +12,7 @@ namespace Offender {
         m_display_context = l_context;
 //        m_ViewPersp = m_display_context->GetPerspective();
         m_View.LoadIdentity();
-        m_camera = Camera(this);
+        m_camera = Camera();
         m_camera_target = NULL;
         m_camera_chase_distance = 4.0f;
         m_ViewPersp = m_display_context->GetPerspective() * m_camera.GetModelMatrix()->Inverse();

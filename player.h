@@ -18,15 +18,15 @@ namespace Offender {
             GLfloat         m_rotation;
             GLfloat         m_tilt;
             static Mesh*    m_mesh;
+            static Mesh*    m_flame;
         public:
             Player(World*, RenderGroup*, ObjPos, ObjVec, ObjQuat);
             void            CollisionHandler();
             OBJ_NUMTYPE     GetCollisionRadius();
             GLboolean       Move();
             GLboolean       DrawMeshes();
-            static const char * GetMeshName() { return "alienship"; };
-            static void     SetMesh(Mesh* l_mesh) { m_mesh = l_mesh; };
-            Mesh*           GetMesh() { return m_mesh; };
+            static vector<string>   GetMeshNames();
+            static void             SetMeshes(vector<Mesh*>);
     };
 
 }

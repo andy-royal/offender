@@ -58,10 +58,19 @@ namespace Offender {
 
             // Factory continued. Again note pointer to member function.
             template <typename T> void Register(const char* name) {
+                // Register create function
                 m_CreateFuncs[name] = &World::CreateFunc<T>;
-                Mesh* l_mesh = new Mesh(T::GetMeshName());
-                m_render.AddMesh(l_mesh);
-                T::SetMesh(l_mesh);
+
+                // Load meshes
+                vector<string> l_mesh_names = T::GetMeshNames();
+                vector<string>::iterator it;
+                vector<Mesh*> l_meshes;
+                for (it=l_mesh_names.begin(); it!=l_mesh_names.end(); it++) {
+                    Mesh* l_mesh = new Mesh(it->data());
+                    m_render.AddMesh(l_mesh);
+                    l_meshes.push_back(l_mesh);
+                }
+                T::SetMeshes(l_meshes);
             }
             Object* GetInstance(string l_name, ObjPos l_position, ObjVec l_velocity, ObjQuat l_orientation) {
                 Object* tmp = (this->*m_CreateFuncs[l_name])(l_position, l_velocity, l_orientation);

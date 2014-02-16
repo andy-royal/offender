@@ -13,6 +13,7 @@ namespace Offender {
     }
 
     Mesh* Player::m_mesh;
+    Mesh* Player::m_flame;
 
     void Player::CollisionHandler() {
         //MessageBox(NULL,L"Oh dear, you crashed.",L"SPLAT",MB_OK|MB_ICONEXCLAMATION);
@@ -71,11 +72,24 @@ namespace Offender {
 
     GLboolean Player::DrawMeshes() {
         m_mesh->Draw();
+        m_flame->Draw();
         return GL_TRUE;
     }
 
     OBJ_NUMTYPE Player::GetCollisionRadius() {
         return m_mesh->GetCollisionRadius();
     }
+
+    vector<string> Player::GetMeshNames() {
+        vector<string> tmp;
+        tmp.push_back("alienship");
+        tmp.push_back("alienship_flame");
+        return tmp;
+    };
+
+    void Player::SetMeshes(vector<Mesh*> l_meshes) {
+        m_mesh  = l_meshes[0];
+        m_flame = l_meshes[1];
+    };
 
 }

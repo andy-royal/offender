@@ -44,7 +44,7 @@ namespace Offender {
         public:
             Object(World*, RenderGroup*, ObjPos, ObjVec, ObjQuat);
             GLboolean               Draw();
-            virtual GLboolean       DrawMeshes() =0;
+            virtual GLboolean       DrawMeshes(RenderGroup*) =0;
             virtual GLboolean       Move() =0;
             virtual void            CollisionHandler() =0;
             virtual OBJ_NUMTYPE     GetCollisionRadius() =0;

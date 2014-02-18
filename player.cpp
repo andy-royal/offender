@@ -70,9 +70,20 @@ namespace Offender {
         return GL_TRUE;
     }
 
-    GLboolean Player::DrawMeshes() {
+    GLboolean Player::DrawMeshes(RenderGroup* l_rendergroup) {
         m_mesh->Draw();
+
+        GLfloat l_colour[3] = {1.0f, 0.0f, 0.0f};
+        const GLfloat Ka = 1.0f;
+        const GLfloat Kd = 0.0f;
+        const GLfloat Ks = 0.0f;
+        glUniform4fv(l_rendergroup->GetColourHandle(), 1, l_colour);
+        glUniform3f(l_rendergroup->GetKaHandle(), Ka, Ka, Ka);
+        glUniform3f(l_rendergroup->GetKdHandle(), Kd, Kd, Kd);
+        glUniform3f(l_rendergroup->GetKsHandle(), Ks, Ks, Ks);
+
         m_flame->Draw();
+
         return GL_TRUE;
     }
 

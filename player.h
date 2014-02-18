@@ -24,7 +24,7 @@ namespace Offender {
             void            CollisionHandler();
             OBJ_NUMTYPE     GetCollisionRadius();
             GLboolean       Move();
-            GLboolean       DrawMeshes();
+            GLboolean       DrawMeshes(RenderGroup*);
             static vector<string>   GetMeshNames();
             static void             SetMeshes(vector<Mesh*>);
     };

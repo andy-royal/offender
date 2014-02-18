@@ -45,7 +45,7 @@ namespace Offender {
         glUniform3f(m_rendergroup->GetLsHandle(), 1.0f, 1.0f, 1.0f);
         glUniform1f(m_rendergroup->GetShininessHandle(), 1.0f);
 
-        DrawMeshes();
+        DrawMeshes(m_rendergroup);
 
         return GL_TRUE;
     }
